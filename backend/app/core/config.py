@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import computed_field
+from pydantic import computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,6 +9,13 @@ class Settings(BaseSettings):
     """All configuration comes from environment variables (or backend/.env in development)."""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    @field_validator("*", mode="before")
+    @classmethod
+    def _strip_whitespace(cls, v):
+        # Values pasted into dashboards (Render, Vercel) often carry a stray space or newline.
+        # An untrimmed key ends up in an HTTP header and makes Supabase reset the HTTP/2 stream.
+        return v.strip() if isinstance(v, str) else v
 
     app_env: Literal["development", "test", "production"] = "development"
     log_level: str = "INFO"

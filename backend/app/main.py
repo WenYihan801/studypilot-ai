@@ -18,6 +18,7 @@ def create_app() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
     )
+    register_error_handlers(app)  # before CORS so CORS wraps the catch-all middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,  # explicit allowlist, never "*"
@@ -26,7 +27,6 @@ def create_app() -> FastAPI:
         allow_headers=["Authorization", "Content-Type"],
         max_age=600,
     )
-    register_error_handlers(app)
     app.include_router(router)
     return app
 

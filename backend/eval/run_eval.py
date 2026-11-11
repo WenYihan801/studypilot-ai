@@ -46,7 +46,9 @@ def main() -> int:
 
     ws = client.post("/api/v1/workspaces", json={"name": "Evaluation"}).json()
     for path in sorted((ROOT / "sample_data").glob("*.md")):
-        r = client.post(f"/api/v1/workspaces/{ws['id']}/documents", files={"file": (path.name, path.read_bytes(), "text/markdown")})
+        r = client.post(
+            f"/api/v1/workspaces/{ws['id']}/documents", files={"file": (path.name, path.read_bytes(), "text/markdown")}
+        )
         doc = client.get(f"/api/v1/documents/{r.json()['id']}").json()
         print(f"ingested {path.name}: {doc['status']} ({doc['chunk_count']} chunks) {doc.get('error_message') or ''}")
         if doc["status"] != "READY":
@@ -65,8 +67,12 @@ def main() -> int:
         files = [c["filename"] for c in msg["citations"]]
         in_scope = q["expected_file"] is not None
         row = {
-            "id": q["id"], "question": q["question"], "in_scope": in_scope, "insufficient": body["insufficient_evidence"],
-            "cited_files": files, "answer": msg["content"],
+            "id": q["id"],
+            "question": q["question"],
+            "in_scope": in_scope,
+            "insufficient": body["insufficient_evidence"],
+            "cited_files": files,
+            "answer": msg["content"],
             "source_hit": (q["expected_file"] in files) if in_scope else None,
             "keywords_found": all(k.lower() in msg["content"].lower() for k in q["keywords"]) if in_scope else None,
             "correct_refusal": body["insufficient_evidence"] if not in_scope else None,
@@ -86,8 +92,10 @@ def main() -> int:
         "provider": settings.ai_provider,
         "chat_model": settings.gemini_chat_model if settings.ai_provider == "gemini" else "mock",
         "embedding_model": settings.gemini_embedding_model if settings.ai_provider == "gemini" else "mock",
-        "top_k": settings.retrieval_top_k, "min_score": settings.retrieval_min_score,
-        "chunk_size_tokens": settings.chunk_size_tokens, "chunk_overlap_tokens": settings.chunk_overlap_tokens,
+        "top_k": settings.retrieval_top_k,
+        "min_score": settings.retrieval_min_score,
+        "chunk_size_tokens": settings.chunk_size_tokens,
+        "chunk_overlap_tokens": settings.chunk_overlap_tokens,
         "errors": len(rows) - len(ok),
         "source_hit_rate": pct(sum(r["source_hit"] for r in ins), len(ins)),
         "keyword_coverage": pct(sum(r["keywords_found"] for r in ins), len(ins)),
@@ -104,7 +112,10 @@ def main() -> int:
         lines += ["> Mock provider: this only proves the pipeline runs. These numbers are NOT model accuracy.", ""]
     lines += ["| Metric | Value |", "|---|---|"] + [f"| {k} | {v} |" for k, v in metrics.items()]
     lines += ["", "| ID | In scope | Source hit | Keywords | Insufficient |", "|---|---|---|---|---|"]
-    lines += [f"| {r['id']} | {r.get('in_scope')} | {r.get('source_hit')} | {r.get('keywords_found')} | {r.get('insufficient')} |" for r in rows]
+    lines += [
+        f"| {r['id']} | {r.get('in_scope')} | {r.get('source_hit')} | {r.get('keywords_found')} | {r.get('insufficient')} |"
+        for r in rows
+    ]
     (out_dir / f"{stamp}-{settings.ai_provider}.md").write_text("\n".join(lines) + "\n")
     print(json.dumps(metrics, indent=2))
     return 0

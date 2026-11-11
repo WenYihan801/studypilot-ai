@@ -88,3 +88,14 @@ def register_error_handlers(app: FastAPI) -> None:
     async def _unhandled(_: Request, exc: Exception) -> JSONResponse:
         logger.exception("Unhandled error: %s", type(exc).__name__)
         return JSONResponse(status_code=500, content=_body("internal_error", "Something went wrong on our side."))
+
+    # Exception handlers for bare `Exception` run in Starlette's outermost ServerErrorMiddleware,
+    # i.e. outside CORSMiddleware, so browsers saw an opaque "Failed to fetch" instead of a 500.
+    # This middleware is registered before CORS (so it sits inside it) and turns crashes into JSON.
+    @app.middleware("http")
+    async def _catch_all(request: Request, call_next):
+        try:
+            return await call_next(request)
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Unhandled error: %s", type(exc).__name__)
+            return JSONResponse(status_code=500, content=_body("internal_error", "Something went wrong on our side."))
