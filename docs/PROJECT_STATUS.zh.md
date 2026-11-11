@@ -22,9 +22,9 @@
 
 ## 需要你本人完成（需要你的账号，我无法代做）
 
-1. **创建 Supabase dev / prod 项目**，执行 `supabase db push`，确认 JWT Keys 是非对称密钥（`docs/deployment.md` 第 1 步）。
-2. **创建 Gemini API Key**（dev、prod 各用一个 Google Cloud 项目）。
-3. **运行真实 RAG 评估**：`AI_PROVIDER=gemini … uv run python -m eval.run_eval`，把结果表格贴进 `docs/testing.md`。目前只用 Mock 跑通过流程，**还没有真实准确率数字**，不要在简历上写准确率。
+1. ✅ Supabase dev 项目已创建并建表（2026-11-11）；prod 项目在部署时再建。
+2. ✅ Gemini dev Key 已创建并验证；prod Key 部署时在另一个项目里建。
+3. ✅ **真实 RAG 评估已完成（2026-11-11）**：26/26，但语料只有 3 份短笔记，检索几乎不构成挑战；需要用 10–20 份真实长 PDF 再测一次才有说服力。
 4. **运行线上 RLS 测试**（`tests/integration`）和完整 E2E（`e2e/full-flow.spec.ts`）。
 5. **部署**：Render（Blueprint）→ Vercel（Root Directory = `frontend`）→ 回填 CORS 和 Supabase Redirect URLs。
 6. **作品集收尾**：真实截图（放 `docs/screenshots/`）、按 `docs/demo-script.md` 录 2–3 分钟视频、README 填 Live Demo 链接。
@@ -48,4 +48,4 @@
 - Enforced multi-tenant isolation with PostgreSQL Row Level Security (backend queries run under the user's JWT, verified via JWKS) and read-only integrity tables for scores and AI usage; verified with SQL and API isolation tests.
 - Generated quizzes and flashcards with JSON-schema output validated by Pydantic and business rules; auto-grading including LLM-graded short answers.
 - Controlled AI cost with per-user daily quotas, rate limiting, embedding reuse via SHA-256 deduplication and cached map-reduce summaries.
-- Wrote 94 automated tests (Pytest, Vitest, Playwright) and a GitHub Actions CI pipeline; built a 26-question RAG evaluation set (source hit rate: __%, correct refusal rate: __% — fill in after running).
+- Wrote 94 automated tests (Pytest, Vitest, Playwright) and a GitHub Actions CI pipeline; on a 26-question evaluation set over sample course notes, every in-scope answer cited the correct source and all 6 out-of-scope questions were correctly declined (small corpus — expanding the benchmark).

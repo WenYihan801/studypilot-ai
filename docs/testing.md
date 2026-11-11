@@ -13,7 +13,7 @@ Nothing is estimated. Re-run them yourself with the commands shown.
 | E2E smoke (public pages) | Playwright (desktop + Pixel 7) | `npx playwright test e2e/smoke.spec.ts` | **8 passed** |
 | E2E full user journey | Playwright | `E2E_EMAIL=… E2E_PASSWORD=… npx playwright test e2e/full-flow.spec.ts` | Not yet run: requires your deployed stack + a test account |
 | Live RLS against Supabase | Pytest + supabase-py | `uv run pytest tests/integration -v` (env vars in file header) | Not yet run: requires your Supabase project |
-| RAG evaluation (26 questions) | `backend/eval/run_eval.py` | `AI_PROVIDER=gemini GEMINI_API_KEY=… uv run python -m eval.run_eval` | Not yet run with Gemini (see below) |
+| RAG evaluation (26 questions) | `backend/eval/run_eval.py` | `uv run python -m eval.run_eval` (AI_PROVIDER=gemini) | **Run 2026-11-11 with Gemini: 26/26** (see below, incl. limitations) |
 
 Lint/type checks: `ruff check` (backend) and `oxlint` + `tsc -b` (frontend) pass with zero findings.
 
@@ -67,11 +67,29 @@ and key terms) and 6 deliberately out of scope. The script runs the real upload 
 * **correct_refusal_rate** — out-of-scope questions flagged as insufficient
 * **invalid_citations** — always 0 by construction (unretrieved citations are removed)
 
-Status: the pipeline was verified end-to-end with the **mock** provider only. Mock numbers measure nothing about answer quality,
-so they are deliberately not reported here. Run it with your Gemini key (about 30 embedding calls + 26 chat calls; the
-script waits 4 s between questions to stay under free-tier per-minute limits) and paste the generated
-`eval/results/<timestamp>-gemini.md` table into this section. Use it to tune `RETRIEVAL_MIN_SCORE`, `RETRIEVAL_TOP_K`
-and chunk size — change one parameter at a time and keep each result file.
+### Result — 2026-11-11 21:02 SGT (real Gemini API, free tier)
+
+Configuration: chat `gemini-3.1-flash-lite`, embeddings `gemini-embedding-001` (768-d), top_k 5, min_score 0.3,
+chunk 600 / overlap 100 tokens, thinking level `low`. Run on the developer's MacBook against the live Gemini API.
+
+| Metric | Result |
+|---|---|
+| Errors | 0 |
+| Source hit rate (expected file cited) | 100.0 % (20/20) |
+| Keyword coverage | 100.0 % (20/20) |
+| Answered when in scope | 100.0 % (20/20) |
+| Correct refusal on out-of-scope questions | 100.0 % (6/6) |
+| Invalid citations shown to user | 0 |
+
+**How to read this honestly**
+
+* The corpus is three short notes; each fits in roughly one chunk, so with top_k = 5 retrieval returns nearly
+  all material for every question. The 100 % source-hit rate therefore does **not** measure retrieval quality at scale.
+* What it does show: answers cite the right document, no fabricated citations reached the user, and all six
+  out-of-scope questions were explicitly declined (the model labelled any background as general knowledge).
+* One refused answer (out-03, B+ trees) still attached a citation while explaining what the notes *do* cover.
+* Next step for a meaningful retrieval number: add 10–20 longer documents (real lecture PDFs) and 50+ questions,
+  then compare top_k / min_score / chunk size one change at a time.
 
 ## Known gaps
 
