@@ -1,0 +1,23 @@
+\set ON_ERROR_STOP 0
+grant select, insert, update, delete on all tables in schema public to authenticated;
+grant execute on all functions in schema public to authenticated;
+insert into auth.users(id,email) values ('00000000-0000-0000-0000-00000000000a','a@x.com'),('00000000-0000-0000-0000-00000000000b','b@x.com');
+insert into public.workspaces(id,user_id,name) values ('11111111-1111-1111-1111-111111111111','00000000-0000-0000-0000-00000000000a','A ws');
+select 'profiles auto-created: ' || count(*) from public.profiles;
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select 'B sees A workspaces: ' || count(*) from public.workspaces;
+update public.workspaces set name='hacked'; 
+insert into public.documents(workspace_id,user_id,filename,storage_path,mime_type,size_bytes,sha256) values ('11111111-1111-1111-1111-111111111111','00000000-0000-0000-0000-00000000000b','x','x','text/plain',1,'h');
+insert into public.ai_usage_events(user_id,provider,model,operation) values ('00000000-0000-0000-0000-00000000000b','x','x','x');
+insert into public.workspaces(user_id,name) values ('00000000-0000-0000-0000-00000000000a','spoof');
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+select 'A sees own workspace name: ' || name from public.workspaces;
+insert into public.documents(id,workspace_id,user_id,filename,storage_path,mime_type,size_bytes,sha256,status) values ('22222222-2222-2222-2222-222222222222','11111111-1111-1111-1111-111111111111','00000000-0000-0000-0000-00000000000a','n.md','p','text/markdown',1,'h','READY');
+insert into public.document_chunks(document_id,workspace_id,user_id,chunk_index,content,embedding) values ('22222222-2222-2222-2222-222222222222','11111111-1111-1111-1111-111111111111','00000000-0000-0000-0000-00000000000a',0,'hello', array_fill(0.1::real, array[768])::extensions.vector);
+select 'A match_chunks rows: ' || count(*) from public.match_chunks(array_fill(0.1::real, array[768])::extensions.vector, '11111111-1111-1111-1111-111111111111','00000000-0000-0000-0000-00000000000a');
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select 'B match_chunks on A ws: ' || count(*) from public.match_chunks(array_fill(0.1::real, array[768])::extensions.vector, '11111111-1111-1111-1111-111111111111','00000000-0000-0000-0000-00000000000a');
+reset role;
+delete from public.workspaces;
+select 'chunks after workspace delete (cascade): ' || count(*) from public.document_chunks;

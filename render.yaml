@@ -1,0 +1,39 @@
+# Render Blueprint (Dashboard → New → Blueprint → select this repo).
+# Secrets marked `sync: false` are entered in the Render dashboard, never committed.
+services:
+  - type: web
+    name: studypilot-api
+    runtime: python
+    plan: free            # free instances sleep after 15 min idle (~1 min cold start)
+    rootDir: backend      # Python version comes from backend/.python-version (3.12)
+    buildCommand: uv sync --frozen --no-dev
+    startCommand: uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATA_BACKEND
+        value: supabase
+      - key: AI_PROVIDER
+        value: gemini
+      - key: CORS_ORIGINS
+        sync: false       # e.g. https://studypilot-ai.vercel.app
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_CHAT_MODEL
+        value: gemini-3.1-flash-lite
+      - key: GEMINI_QUIZ_MODEL
+        value: gemini-3.5-flash
+      - key: GEMINI_EMBEDDING_MODEL
+        value: gemini-embedding-001
+      - key: EMBEDDING_DIM
+        value: "768"
+      - key: DAILY_AI_REQUEST_LIMIT
+        value: "100"

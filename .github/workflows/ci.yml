@@ -1,0 +1,50 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - run: uv run ruff check app tests
+      - run: uv run pytest -q
+
+  database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    env: { PGHOST: localhost, PGUSER: postgres, PGPASSWORD: postgres }
+    steps:
+      - uses: actions/checkout@v4
+      - run: createdb sp
+      - run: psql -d sp -f supabase/tests/00_supabase_stubs.sql
+      - run: psql -d sp -v ON_ERROR_STOP=1 -f supabase/migrations/20261111000001_initial_schema.sql
+      - run: psql -d sp -t -f supabase/tests/10_rls_check.sql | tee rls.out
+      - run: |
+          grep -q "B sees A workspaces: 0" rls.out
+          grep -q "B match_chunks on A ws: 0" rls.out
+          grep -q "chunks after workspace delete (cascade): 0" rls.out
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
+      - run: npx oxlint src
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test e2e/smoke.spec.ts

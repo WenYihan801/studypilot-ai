@@ -1,0 +1,36 @@
+[project]
+name = "studypilot-backend"
+version = "1.0.0"
+description = "StudyPilot AI backend (FastAPI)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.162.4",
+    "google-genai>=3.1.0",
+    "pydantic>=2.14.3",
+    "pydantic-settings>=2.16.2",
+    "pyjwt[crypto]>=2.15.1",
+    "pypdf>=7.0.1",
+    "python-docx>=1.2.0",
+    "python-multipart>=0.0.33",
+    "supabase>=2.34.1",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.4",
+]
+
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["B008", "E501"]  # Depends() defaults are idiomatic; line length is handled by `ruff format`
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::SyntaxWarning", "ignore::DeprecationWarning"]
