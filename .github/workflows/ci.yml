@@ -46,5 +46,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
+      # GitHub's Ubuntu runners ship Google Chrome; using it avoids a flaky apt download of browser deps.
       - run: npx playwright test e2e/smoke.spec.ts
+        env:
+          PLAYWRIGHT_CHROME_PATH: /usr/bin/google-chrome
