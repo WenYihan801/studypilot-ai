@@ -3,7 +3,7 @@
 Upload your course materials, ask questions and get **answers grounded in your own documents with page-level sources**,
 then practise with **auto-graded quizzes** and **flashcards**, and track progress on a dashboard.
 
-**Live demo:** https://studypilot-ai.vercel.app · **API docs:** https://studypilot-api-j3bk.onrender.com/docs · **Demo video:** _coming soon_
+**Live demo:** https://studypilot-ai-topaz.vercel.app · **API docs:** https://studypilot-api-j3bk.onrender.com/docs · **Demo video:** _coming soon_
 
 > The API runs on Render's free tier and sleeps after 15 minutes idle — the first request can take up to a minute.
 

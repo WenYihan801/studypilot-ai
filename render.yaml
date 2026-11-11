@@ -18,7 +18,7 @@ services:
       - key: AI_PROVIDER
         value: gemini
       - key: CORS_ORIGINS
-        sync: false       # e.g. https://studypilot-ai.vercel.app
+        sync: false       # e.g. https://studypilot-ai-topaz.vercel.app
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_PUBLISHABLE_KEY

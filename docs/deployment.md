@@ -1,6 +1,6 @@
 # Deployment Guide (Supabase → Render → Vercel)
 
-**Current production (2026-11-11):** frontend https://studypilot-ai.vercel.app · API https://studypilot-api-j3bk.onrender.com · Supabase project `spylebeazwasxpzxuvif` (Singapore).
+**Current production (2026-11-11):** frontend https://studypilot-ai-topaz.vercel.app · API https://studypilot-api-j3bk.onrender.com · Supabase project `spylebeazwasxpzxuvif` (Singapore).
 
 > **Check the official terms before you deploy — free plans change.** As of Nov 2026: Supabase free projects pause after
 > 7 days of inactivity (max 2 active free projects, 500 MB database, 1 GB storage); Render free web services spin down after
