@@ -4,6 +4,8 @@ from typing import Literal
 from pydantic import computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+_INVISIBLE = {"\u200b", "\u200c", "\u200d", "\u2060", "\ufeff"}
+
 
 class Settings(BaseSettings):
     """All configuration comes from environment variables (or backend/.env in development)."""
@@ -14,8 +16,16 @@ class Settings(BaseSettings):
     @classmethod
     def _strip_whitespace(cls, v):
         # Values pasted into dashboards (Render, Vercel) often carry a stray space or newline.
-        # An untrimmed key ends up in an HTTP header and makes Supabase reset the HTTP/2 stream.
         return v.strip() if isinstance(v, str) else v
+
+    @field_validator("supabase_publishable_key", "supabase_secret_key", "gemini_api_key", mode="before")
+    @classmethod
+    def _clean_key(cls, v):
+        # API keys never contain whitespace or invisible characters. A pasted space, line break or
+        # zero-width char inside a key ends up in an HTTP header and Supabase resets the HTTP/2 stream.
+        if not isinstance(v, str):
+            return v
+        return "".join(ch for ch in v if not ch.isspace() and ch not in _INVISIBLE)
 
     app_env: Literal["development", "test", "production"] = "development"
     log_level: str = "INFO"

@@ -10,6 +10,12 @@ def test_settings_strip_pasted_whitespace():
     assert s.gemini_api_key == "key"
 
 
+def test_keys_lose_inner_whitespace_and_invisible_chars():
+    s = Settings(supabase_secret_key="sb_secret_ab c\u200bd", supabase_url=" https://x.supabase.co ", _env_file=None)
+    assert s.supabase_secret_key == "sb_secret_abcd"
+    assert s.supabase_url == "https://x.supabase.co"
+
+
 def test_unhandled_errors_keep_cors_headers(monkeypatch):
     monkeypatch.setenv("CORS_ORIGINS", "https://app.example.com")
     from app.core import config
