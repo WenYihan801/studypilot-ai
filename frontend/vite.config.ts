@@ -9,7 +9,12 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
-  server: { port: 5173 },
+  server: {
+    port: 5173,
+    // Dev only: forward /api to the local FastAPI server so the browser sees a single origin.
+    // Use it by setting VITE_API_BASE_URL= (empty) in .env.local. Production uses the full Render URL.
+    proxy: { '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true } },
+  },
   build: {
     rolldownOptions: {
       output: {
