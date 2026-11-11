@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     gemini_chat_model: str = "gemini-3.1-flash-lite"
     gemini_quiz_model: str = "gemini-3.5-flash"
     gemini_embedding_model: str = "gemini-embedding-001"
+    # Gemini 3.x models think by default and thinking tokens count against max_output_tokens.
+    # "low" keeps answers fast and cheap; set to "" to use the model default (needed for 2.5 models).
+    gemini_thinking_level: str = "low"
     # Must match the vector(N) column in the migration.
     embedding_dim: int = 768
     ai_timeout_seconds: float = 60.0

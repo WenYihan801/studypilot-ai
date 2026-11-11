@@ -40,6 +40,10 @@ class GeminiProvider(AIProvider):
         )
 
     # ------------------------------------------------------------------ helpers
+    def _thinking(self):
+        level = self._s.gemini_thinking_level.strip().upper()
+        return types.ThinkingConfig(thinking_level=level) if level else None
+
     def _model(self, role: ModelRole) -> str:
         return self._s.gemini_quiz_model if role == "quiz" else self._s.gemini_chat_model
 
@@ -79,6 +83,7 @@ class GeminiProvider(AIProvider):
             system_instruction=system,
             max_output_tokens=max_output_tokens,
             temperature=temperature,
+            thinking_config=self._thinking(),
         )
         resp = self._call(self._client.models.generate_content, model=model, contents=prompt, config=config)
         text = resp.text or ""
@@ -96,6 +101,7 @@ class GeminiProvider(AIProvider):
             temperature=temperature,
             response_mime_type="application/json",
             response_json_schema=schema.model_json_schema(),
+            thinking_config=self._thinking(),
         )
         resp = self._call(self._client.models.generate_content, model=model, contents=prompt, config=config)
         raw = resp.text or ""
